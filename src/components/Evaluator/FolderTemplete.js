@@ -13,26 +13,124 @@ import React from "react";
 import axios from "axios";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { getGridColDef } from "@mui/x-data-grid";
+import { Quiz } from "@mui/icons-material";
 
 export default function FolderTemplete() {
   const [open, setOpen] = React.useState(true);
   axios.defaults.withCredentials = true;
+  const location=useLocation().state
+  const [cdf,setcdf]=useState();
   const { id } = useParams();
+  console.log("useParams",location)
   useEffect(() => {
     getFolderData();
   }, []);
+  const getcdf = async () => {
+    console.log("ingetcdf")
+    const res = await axios.get(
+      `http://localhost:4000/CDF/showOne/${location.i?.Folder.Program}/${location.i?.Folder.Course.Code}`
+    );
+    console.log("CDF",res.data);
+    setcdf(res.data);
+  };
+  var clo,title,btl
+  var cloa,titlea,btla
+  var clom,titlem,btlm
+  var clof,titlef,btlf
+
   const [Folder, setFolder] = useState({ files: [], ICEF: null, Obe: null, LectureDeliveryRecord: null });
+  const [quiz,setquiz]=useState({title:title,clo_no:clo,clo_correct:true,btl_no:btl,btl_correct:true,Comments:"",Feedback:""})
+  const [assignment,setassignment]=useState({title:titlea,clo_no:cloa,clo_correct:true,btl_no:btla,btl_correct:true,Comments:"",Feedback:""})
+  const [mid,setmid]=useState({title:titlem,clo_no:clom,clo_correct:true,btl_no:btlm,btl_correct:true,Comments:"",Feedback:""})
+  const [final,setfinal]=useState({title:titlef,clo_no:clof,clo_correct:true,btl_no:btlf,btl_correct:true,Comments:"",Feedback:""})
+
 
   console.log("Folder: ", Folder);
   const getFolderData = async () => {
     const res = await axios.get(
-      `http://localhost:4000/EvalFolders/showComp/${id}`
+      `http://localhost:4${id}000/EvalFolders/showComp/`
     );
     console.log(res.data);
     setFolder(res.data);
+    getcdf()
+
   };
   const handleClick = () => {
     setOpen(!open);
+  };
+  const addQuiz = (tit) => {
+    setquiz(existingValues => ({
+      ...existingValues,
+      clo_no: clo.sr,
+      btl_no:btl,
+      title:tit
+    }))
+
+    axios.put(`http://localhost:4000/Folders/addEvaluation/${location.i.Folder._id}`,{
+      title:title,
+      data:quiz
+    })
+    
+    setquiz({title:title,clo_no:clo.sr,clo_correct:true,btl_no:btl,btl_correct:true,Comments:"",Feedback:""})
+
+  };
+  const addAssignment = (tit) => {
+    setassignment(existingValues => ({
+      ...existingValues,
+      clo_no: cloa.sr,
+      btl_no:btla,
+      title:tit
+    }))
+
+    axios.put(`http://localhost:4000/Folders/addEvaluation/${location.i.Folder._id}`,{
+      title:titlea,
+      data:assignment
+    })
+    
+    setassignment({title:titlea,clo_no:cloa.sr,clo_correct:true,btl_no:btla,btl_correct:true,Comments:"",Feedback:""})
+
+  };
+  const addmid = (tit) => {
+    setmid(existingValues => ({
+      ...existingValues,
+      clo_no: clom.sr,
+      btl_no:btlm,
+      title:tit
+    }))
+
+    axios.put(`http://localhost:4000/Folders/addEvaluation/${location.i.Folder._id}`,{
+      title:titlem,
+      data:mid
+    })
+    
+    setmid({title:titlem,clo_no:clom.sr,clo_correct:true,btl_no:btlm,btl_correct:true,Comments:"",Feedback:""})
+
+  };
+  const addEvaluationstatus = () => {
+    
+
+    axios.put(`http://localhost:4000/Folders/editEvaluation/${location.i.Folder._id}`,{
+      Evaluation:true
+    })
+    alert("Course Evaluated")
+
+  };
+  const addfinal = (tit) => {
+    setfinal(existingValues => ({
+      ...existingValues,
+      clo_no: clof.sr,
+      btl_no:btlf,
+      title:tit
+    }))
+
+    axios.put(`http://localhost:4000/Folders/addEvaluation/${location.i.Folder._id}`,{
+      title:titlef,
+      data:final
+    })
+    
+    setfinal({title:titlef,clo_no:clof.sr,clo_correct:true,btl_no:btlf,btl_correct:true,Comments:"",Feedback:""})
+
   };
   return (
     <div
@@ -44,6 +142,7 @@ export default function FolderTemplete() {
         overflow: "hidden",
       }}
     >
+
       <div style={{ padding: 30, overflowY: "scroll", maxHeight: "80vh" }}>
         <div>
           <h1
@@ -74,10 +173,27 @@ export default function FolderTemplete() {
         </div>
         {Folder.files.length > 0 &&
           Folder.files.map((i) => {
-            if(i.Title.includes("Quiz")){
+            var ind;
+
+            if(i.Title.includes("Quiz") && cdf!=null){
+             
+
+             cdf.CLOs.map((val)=>{
+              console.log("sdggfsgajgsdk",val)
+               val.Quizzes.find((item,index)=>{
+                if(item.title==i.Title){
+                  ind=val
+                  clo=val
+                  btl=ind.BTL[0].BTL
+                  title=i.Title
+                  console.log("hello",ind)
+                }
+               })
+          })
             return (
               
               <div>
+                
                 <div style={{ marginTop: 50 }}>
                   <h1
                     className="mb-4 pb-4"
@@ -192,11 +308,22 @@ export default function FolderTemplete() {
                           variant="outlined"
                           size="small"
                           fullWidth
-                          // value={}
-                          // onChange={
-
-                          // }
-                        />
+                           value={clo.sr}
+                           defaultValue={(e) => {
+                            setquiz(existingValues => ({
+                              ...existingValues,
+                              clo_no: clo.sr,
+                            }))
+                          }}
+                           onChange={ (e) => {
+                              setquiz(existingValues => ({
+                                ...existingValues,
+                                clo_no:clo.sr,
+                                title:i.Title
+                              }))
+                            }
+                         }
+                       />
                       </div>
                       <div className="col mb-4 pl-4 ml-4">
                         <FormControl>
@@ -204,16 +331,23 @@ export default function FolderTemplete() {
                           <RadioGroup
                             row
                             aria-labelledby="demo-radio-buttons-group-label"
-                            defaultValue="female"
+                            defaultValue="yes"
                             name="radio-buttons-group"
+                            onChange={(e) => {
+                              setquiz(existingValues => ({
+                                ...existingValues,
+                                clo_correct: e.target.value,
+                                title:i.Title
+                              }))
+                            }}
                           >
                             <FormControlLabel
-                              value="yes"
+                              value={true}
                               control={<Radio size="small" />}
                               label="Yes"
                             />
                             <FormControlLabel
-                              value="no"
+                              value={false}
                               control={<Radio size="small" />}
                               label="No"
                             />
@@ -229,10 +363,21 @@ export default function FolderTemplete() {
                           variant="outlined"
                           size="small"
                           fullWidth
-                          // value={}
-                          // onChange={
-
-                          // }
+                           value={btl}
+                           defaultValue={(e) => {
+                            setquiz(existingValues => ({
+                              ...existingValues,
+                              btl_no: btl,
+                            }))
+                          }}
+                           onChange={
+                            (e) => {
+                              setquiz(existingValues => ({
+                                ...existingValues,
+                                btl_no: btl,
+                              }))
+                            }
+                          }
                         />
                       </div>
                       <div className="col mb-4">
@@ -243,14 +388,20 @@ export default function FolderTemplete() {
                             aria-labelledby="demo-radio-buttons-group-label"
                             defaultValue="female"
                             name="radio-buttons-group"
+                            onChange={(e) => {
+                              setquiz(existingValues => ({
+                                ...existingValues,
+                                btl_correct: e.target.value,
+                              }))
+                            }}
                           >
                             <FormControlLabel
-                              value="yes"
+                              value={true}
                               control={<Radio size="small" />}
                               label="Yes"
                             />
                             <FormControlLabel
-                              value="no"
+                              value={false}
                               control={<Radio size="small" />}
                               label="No"
                             />
@@ -267,10 +418,13 @@ export default function FolderTemplete() {
                         variant="outlined"
                         size="small"
                         fullWidth
-                        // value={}
-                        // onChange={
-
-                        // }
+                         value={quiz.Comments}
+                        onChange={(e) => {
+                          setquiz(existingValues => ({
+                            ...existingValues,
+                            Comments: e.target.value,
+                          }))
+                        }}
                       />
                       <TextField
                         multiline={true}
@@ -280,10 +434,13 @@ export default function FolderTemplete() {
                         variant="outlined"
                         size="small"
                         fullWidth
-                        // value={}
-                        // onChange={
-
-                        // }
+                         value={quiz.Feedback}
+                         onChange={(e) => {
+                          setquiz(existingValues => ({
+                            ...existingValues,
+                            Feedback: e.target.value,
+                          }))
+                        }}
                       />
                       <Button
                         style={{ float: "right" }}
@@ -291,6 +448,7 @@ export default function FolderTemplete() {
                         color="primary"
                         size="small"
                         type="submit"
+                        onClick={()=>addQuiz(i.Title)}
                       >
                         Submit
                       </Button>
@@ -303,7 +461,20 @@ export default function FolderTemplete() {
           
           {Folder.files.length > 0 &&
           Folder.files.map((i) => {
-            if(i.Title.includes("Assignment")){
+            var ind;
+            if(i.Title.includes("Assignment") && cdf!=null){
+              cdf.CLOs.map((val)=>{
+                console.log("sdggfsgajgsdk",val)
+                 val.Assignment.find((item,index)=>{
+                  if(item.title==i.Title){
+                    ind=val
+                    cloa=val
+                    btla=ind.BTL[0].BTL
+                    titlea=i.Title
+                    console.log("hello",ind)
+                  }
+                 })
+            })
             return (
               
               <div>
@@ -421,10 +592,21 @@ export default function FolderTemplete() {
                           variant="outlined"
                           size="small"
                           fullWidth
-                          // value={}
-                          // onChange={
-
-                          // }
+                          value={cloa.sr}
+                          defaultValue={(e) => {
+                            setassignment(existingValues => ({
+                              ...existingValues,
+                              clo_no: cloa.sr,
+                            }))
+                          }}
+                           onChange={ (e) => {
+                              setassignment(existingValues => ({
+                                ...existingValues,
+                                clo_no:cloa.sr,
+                                title:i.Title
+                              }))
+                            }
+                         }
                         />
                       </div>
                       <div className="col mb-4 pl-4 ml-4">
@@ -435,14 +617,21 @@ export default function FolderTemplete() {
                             aria-labelledby="demo-radio-buttons-group-label"
                             defaultValue="female"
                             name="radio-buttons-group"
+                            onChange={(e) => {
+                              setassignment(existingValues => ({
+                                ...existingValues,
+                                clo_correct: e.target.value,
+                                title:i.Title
+                              }))
+                            }}
                           >
                             <FormControlLabel
-                              value="yes"
+                              value={true}
                               control={<Radio size="small" />}
                               label="Yes"
                             />
                             <FormControlLabel
-                              value="no"
+                              value={false}
                               control={<Radio size="small" />}
                               label="No"
                             />
@@ -458,10 +647,21 @@ export default function FolderTemplete() {
                           variant="outlined"
                           size="small"
                           fullWidth
-                          // value={}
-                          // onChange={
-
-                          // }
+                          value={btla}
+                          defaultValue={(e) => {
+                            setassignment(existingValues => ({
+                              ...existingValues,
+                              btl_no: btla,
+                            }))
+                          }}
+                          onChange={
+                            (e) => {
+                              setassignment(existingValues => ({
+                                ...existingValues,
+                                btl_no: btla,
+                              }))
+                            }
+                          }
                         />
                       </div>
                       <div className="col mb-4">
@@ -472,14 +672,20 @@ export default function FolderTemplete() {
                             aria-labelledby="demo-radio-buttons-group-label"
                             defaultValue="female"
                             name="radio-buttons-group"
+                            onChange={(e) => {
+                              setassignment(existingValues => ({
+                                ...existingValues,
+                                btl_correct: e.target.value,
+                              }))
+                            }}
                           >
                             <FormControlLabel
-                              value="yes"
+                              value={true}
                               control={<Radio size="small" />}
                               label="Yes"
                             />
                             <FormControlLabel
-                              value="no"
+                              value={false}
                               control={<Radio size="small" />}
                               label="No"
                             />
@@ -496,10 +702,13 @@ export default function FolderTemplete() {
                         variant="outlined"
                         size="small"
                         fullWidth
-                        // value={}
-                        // onChange={
-
-                        // }
+                        value={assignment.Comments}
+                        onChange={(e) => {
+                          setassignment(existingValues => ({
+                            ...existingValues,
+                            Comments: e.target.value,
+                          }))
+                        }}
                       />
                       <TextField
                         multiline={true}
@@ -509,10 +718,13 @@ export default function FolderTemplete() {
                         variant="outlined"
                         size="small"
                         fullWidth
-                        // value={}
-                        // onChange={
-
-                        // }
+                        value={assignment.Feedback}
+                        onChange={(e) => {
+                          setassignment(existingValues => ({
+                            ...existingValues,
+                            Feedback: e.target.value,
+                          }))
+                        }}
                       />
                       <Button
                         style={{ float: "right" }}
@@ -520,6 +732,8 @@ export default function FolderTemplete() {
                         color="primary"
                         size="small"
                         type="submit"
+                        onClick={()=>addAssignment(i.Title)}
+
                       >
                         Submit
                       </Button>
@@ -529,9 +743,21 @@ export default function FolderTemplete() {
               </div>
             );}
           })}
+
         {Folder.files.length > 0 &&
           Folder.files.map((i) => {
-            if(i.Title.includes("Terminal")){
+            var ind;
+            if(i.Title.includes("Terminal") && cdf!=null){
+              cdf.CLOs.map((val)=>{
+                if(val.Final.includes("Final") && cdf!=null){
+                  
+                    ind=val
+                    clof=val
+                    btlf=ind.BTL[0].BTL
+                    titlef=i.Title
+                }
+                 
+            })
             return (
               
               <div>
@@ -649,10 +875,21 @@ export default function FolderTemplete() {
                           variant="outlined"
                           size="small"
                           fullWidth
-                          // value={}
-                          // onChange={
-
-                          // }
+                          value={clof.sr}
+                          defaultValue={(e) => {
+                            setfinal(existingValues => ({
+                              ...existingValues,
+                              clo_no: clof.sr,
+                            }))
+                          }}
+                           onChange={ (e) => {
+                              setfinal(existingValues => ({
+                                ...existingValues,
+                                clo_no:clof.sr,
+                                title:i.Title
+                              }))
+                            }
+                         }
                         />
                       </div>
                       <div className="col mb-4 pl-4 ml-4">
@@ -663,14 +900,21 @@ export default function FolderTemplete() {
                             aria-labelledby="demo-radio-buttons-group-label"
                             defaultValue="female"
                             name="radio-buttons-group"
+                            onChange={(e) => {
+                              setfinal(existingValues => ({
+                                ...existingValues,
+                                clo_correct: e.target.value,
+                                title:i.Title
+                              }))
+                            }}
                           >
                             <FormControlLabel
-                              value="yes"
+                              value={true}
                               control={<Radio size="small" />}
                               label="Yes"
                             />
                             <FormControlLabel
-                              value="no"
+                              value={false}
                               control={<Radio size="small" />}
                               label="No"
                             />
@@ -686,10 +930,21 @@ export default function FolderTemplete() {
                           variant="outlined"
                           size="small"
                           fullWidth
-                          // value={}
-                          // onChange={
-
-                          // }
+                          value={btlf}
+                          defaultValue={(e) => {
+                            setfinal(existingValues => ({
+                              ...existingValues,
+                              btl_no: btlf,
+                            }))
+                          }}
+                          onChange={
+                            (e) => {
+                              setfinal(existingValues => ({
+                                ...existingValues,
+                                btl_no: btlf,
+                              }))
+                            }
+                          }
                         />
                       </div>
                       <div className="col mb-4">
@@ -700,14 +955,20 @@ export default function FolderTemplete() {
                             aria-labelledby="demo-radio-buttons-group-label"
                             defaultValue="female"
                             name="radio-buttons-group"
+                            onChange={(e) => {
+                              setfinal(existingValues => ({
+                                ...existingValues,
+                                btl_correct: e.target.value,
+                              }))
+                            }}
                           >
                             <FormControlLabel
-                              value="yes"
+                              value={true}
                               control={<Radio size="small" />}
                               label="Yes"
                             />
                             <FormControlLabel
-                              value="no"
+                              value={false}
                               control={<Radio size="small" />}
                               label="No"
                             />
@@ -724,10 +985,13 @@ export default function FolderTemplete() {
                         variant="outlined"
                         size="small"
                         fullWidth
-                        // value={}
-                        // onChange={
-
-                        // }
+                        value={final.Comments}
+                        onChange={(e) => {
+                          setfinal(existingValues => ({
+                            ...existingValues,
+                            Comments: e.target.value,
+                          }))
+                        }}
                       />
                       <TextField
                         multiline={true}
@@ -737,10 +1001,13 @@ export default function FolderTemplete() {
                         variant="outlined"
                         size="small"
                         fullWidth
-                        // value={}
-                        // onChange={
-
-                        // }
+                        value={final.Feedback}
+                        onChange={(e) => {
+                          setfinal(existingValues => ({
+                            ...existingValues,
+                            Feedback: e.target.value,
+                          }))
+                        }}
                       />
                       <Button
                         style={{ float: "right" }}
@@ -748,6 +1015,8 @@ export default function FolderTemplete() {
                         color="primary"
                         size="small"
                         type="submit"
+                        onClick={()=>addfinal(i.Title)}
+
                       >
                         Submit
                       </Button>
@@ -759,7 +1028,18 @@ export default function FolderTemplete() {
           })}
           {Folder.files.length > 0 &&
           Folder.files.map((i) => {
-            if(i.Title.includes("Mid")||i.Title.includes("Sessional")){
+            var ind;
+            if(i.Title.includes("Mid")||i.Title.includes("Sessional") && cdf!=null){
+              cdf?.CLOs?.map((val)=>{
+                if(val.Mid.includes("Mid") || val.Mid.includes("Sessional") && cdf!=null){
+                  
+                    ind=val
+                    clom=val.sr
+                    btlm=ind.BTL[0].BTL
+                    titlem=i.Title
+                }
+                 
+            })
             return (
               
               <div>
@@ -877,10 +1157,21 @@ export default function FolderTemplete() {
                           variant="outlined"
                           size="small"
                           fullWidth
-                          // value={}
-                          // onChange={
-
-                          // }
+                          value={clom}
+                          defaultValue={(e) => {
+                            setmid(existingValues => ({
+                              ...existingValues,
+                              clo_no: clom,
+                            }))
+                          }}
+                           onChange={ (e) => {
+                              setmid(existingValues => ({
+                                ...existingValues,
+                                clo_no:clom,
+                                title:i.Title
+                              }))
+                            }
+                         }
                         />
                       </div>
                       <div className="col mb-4 pl-4 ml-4">
@@ -891,14 +1182,21 @@ export default function FolderTemplete() {
                             aria-labelledby="demo-radio-buttons-group-label"
                             defaultValue="female"
                             name="radio-buttons-group"
+                            onChange={(e) => {
+                              setmid(existingValues => ({
+                                ...existingValues,
+                                clo_correct: e.target.value,
+                                title:i.Title
+                              }))
+                            }}
                           >
                             <FormControlLabel
-                              value="yes"
+                              value={true}
                               control={<Radio size="small" />}
                               label="Yes"
                             />
                             <FormControlLabel
-                              value="no"
+                              value={false}
                               control={<Radio size="small" />}
                               label="No"
                             />
@@ -914,10 +1212,21 @@ export default function FolderTemplete() {
                           variant="outlined"
                           size="small"
                           fullWidth
-                          // value={}
-                          // onChange={
-
-                          // }
+                          value={btlm}
+                          defaultValue={(e) => {
+                            setmid(existingValues => ({
+                              ...existingValues,
+                              btl_no: btlm,
+                            }))
+                          }}
+                          onChange={
+                            (e) => {
+                              setmid(existingValues => ({
+                                ...existingValues,
+                                btl_no: btlm,
+                              }))
+                            }
+                          }
                         />
                       </div>
                       <div className="col mb-4">
@@ -928,14 +1237,20 @@ export default function FolderTemplete() {
                             aria-labelledby="demo-radio-buttons-group-label"
                             defaultValue="female"
                             name="radio-buttons-group"
+                            onChange={(e) => {
+                              setmid(existingValues => ({
+                                ...existingValues,
+                                btl_correct: e.target.value,
+                              }))
+                            }}
                           >
                             <FormControlLabel
-                              value="yes"
+                              value={true}
                               control={<Radio size="small" />}
                               label="Yes"
                             />
                             <FormControlLabel
-                              value="no"
+                              value={false}
                               control={<Radio size="small" />}
                               label="No"
                             />
@@ -952,10 +1267,13 @@ export default function FolderTemplete() {
                         variant="outlined"
                         size="small"
                         fullWidth
-                        // value={}
-                        // onChange={
-
-                        // }
+                        value={mid.Comments}
+                        onChange={(e) => {
+                          setmid(existingValues => ({
+                            ...existingValues,
+                            Comments: e.target.value,
+                          }))
+                        }}
                       />
                       <TextField
                         multiline={true}
@@ -965,10 +1283,13 @@ export default function FolderTemplete() {
                         variant="outlined"
                         size="small"
                         fullWidth
-                        // value={}
-                        // onChange={
-
-                        // }
+                        value={mid.Feedback}
+                        onChange={(e) => {
+                          setmid(existingValues => ({
+                            ...existingValues,
+                            Feedback: e.target.value,
+                          }))
+                        }}
                       />
                       <Button
                         style={{ float: "right" }}
@@ -976,6 +1297,8 @@ export default function FolderTemplete() {
                         color="primary"
                         size="small"
                         type="submit"
+                        onClick={()=>addmid(i.Title)}
+
                       >
                         Submit
                       </Button>
@@ -1187,6 +1510,17 @@ export default function FolderTemplete() {
               </Card>
             )}
             <p>{}</p>
+            <Button
+                        style={{ float: "right" }}
+                        variant="contained"
+                        color="primary"
+                        size="small"
+                        type="submit"
+                        onClick={()=>addEvaluationstatus()}
+
+                      >
+                        Evaluate
+                      </Button>
           </div>
         </div>
       </div>

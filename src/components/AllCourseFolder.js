@@ -3,9 +3,30 @@ import "./css/styles.css";
 import Button from "@mui/material/Button";
 import { DataGrid } from "@mui/x-data-grid";
 import { muiAbtn, muibtn } from "./style";
+import axios from "axios";
 
 export default function AllCourseFolder() {
   const [Rows, setRows] = useState([]);
+  const [Posts, setPosts] = useState([]);
+  const userid= JSON.parse(localStorage.getItem('user'))
+  React.useEffect(() => {
+    getData();
+  }, []);
+  const getData = async () => {
+    const res = await axios.get(`http://localhost:4000/EvalFolders/showfolder`);
+    console.log(res.data);
+    setPosts(res.data);
+    var row=[];
+    var index=0
+   res.data.map((val, id) => {
+        console.log("idss",id)
+        
+        row[id]={_id:val._id,id: id, Program: val.Program, Course: val.Course.Name+"-"+val.Course.Code, Evaluator:val.Evaluator?.Name,Faculty:val.User.Name}
+        
+      })
+  console.log("uajh",row)
+  setRows(row);
+  };
 
   const columns = [
     {
@@ -43,7 +64,7 @@ export default function AllCourseFolder() {
             style={muiAbtn}
             //   onClick={}
           >
-            <AiFillEdit style={{ marginRight: 10 }} />
+            
             View Folder
           </Button>
         </>
