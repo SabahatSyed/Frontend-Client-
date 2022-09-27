@@ -30,10 +30,11 @@ export default function FacultyNavigation() {
   React.useEffect(() => {
     getData();
   }, []);
-  console.log("folders in evaluator nav",Folders);
+  //console.log("folders in evaluator nav",Folders);
   const getData = async () => {
     const res = await axios.get("http://localhost:4000/EvalFolders/showAll");
-    console.log(res.data);
+    console.log("Folders",res.data);
+
     setFolders([...res.data]);
   };
   return (

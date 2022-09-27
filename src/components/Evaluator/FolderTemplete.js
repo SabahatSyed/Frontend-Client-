@@ -48,8 +48,9 @@ export default function FolderTemplete() {
 
   console.log("Folder: ", Folder);
   const getFolderData = async () => {
+    console.log("id is here",id)
     const res = await axios.get(
-      `http://localhost:4${id}000/EvalFolders/showComp/`
+      `http://localhost:4000/EvalFolders/showComp/${id}`
     );
     console.log(res.data);
     setFolder(res.data);
