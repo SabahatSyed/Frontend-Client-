@@ -30,10 +30,11 @@ export default function FacultyNavigation() {
   React.useEffect(() => {
     getData();
   }, []);
-  console.log(Folders);
+  //console.log("folders in evaluator nav",Folders);
   const getData = async () => {
     const res = await axios.get("http://localhost:4000/EvalFolders/showAll");
-    console.log(res.data);
+    console.log("Folders",res.data);
+
     setFolders([...res.data]);
   };
   return (
@@ -109,7 +110,7 @@ export default function FacultyNavigation() {
                             if (i.Folder.LabTheory == "Theory") {
                               navigate(
                                 `/Evaluator/FolderTemplete/${i._id}`,
-                                { state: { i } },
+                                { state: { i} },
                                 {
                                   replace: true,
                                 }
@@ -118,7 +119,7 @@ export default function FacultyNavigation() {
                             if (i.Folder.LabTheory == "Lab") {
                               navigate(
                                 `/Evaluator/FolderTemplete/${i._id}`,
-                                { state: { i } },
+                                { state: { i} },
                                 {
                                   replace: true,
                                 }

@@ -5,6 +5,7 @@ import { Button, Modal } from "@mui/material";
 import { AiOutlineFieldTime } from "react-icons/ai";
 import { Box } from "@mui/system";
 import axios from "axios";
+import { Navigate, useNavigate } from "react-router-dom";
 
 const modalstyle = {
   position: "absolute",
@@ -19,12 +20,16 @@ const modalstyle = {
   p: 4,
 };
 function incrementDeadline(rowid) {
+  const navigate=useNavigate();
   console.log("rowid",rowid)
   const [open, setOpen] = useState(false);
-  /*const [date,setdate]=useState(new Date())
+  const [date,setdate]=useState(new Date())
   
   const [round,setround]=useState("");
   const [type,settype]=useState("")
+  useEffect(()=>{
+
+  
   if(rowid.row.Request.includes("Round1")){
     setround("Round1")
   }
@@ -32,32 +37,24 @@ function incrementDeadline(rowid) {
     setround("Round2")
   }
   if(rowid.row.Request.includes("Lab")){
-    setround("Lab")
+    settype("Lab")
   }
   else{
-    setround("Theory")
+    settype("Theory")
   }
+},[])
   const handleClose = () => setOpen(false);
-  /*const updatedate= async () => {
+  const updatedate= async () => {
     const res = await axios.put(`http://localhost:4000/Content/updatedate`,{
       date:date,
       round:round,
-      type:type
+      type:type,
+      _id:rowid.row._id
     });
     console.log("res",res)
-    /*setPosts(res.data);
-            var row=[];
-            var index=0
-            var arr=res.data.Lab.concat(res.data.Theory)
-            console.log("hello",arr)
-           arr.map((val, id) => {
-                console.log("idss",id)
-                row[id]={id: id, FacultyMemberName: val.Request_id.Name, Request: val.Round+" ( "+val.Type+" )", CurrentDeadline:val.Deadline}
-                
-              })
-          console.log("uajh",row)
-          setRows(row);
-  }*/
+    Navigate(-1)
+    
+  }
   return (
     <div>
       <Button
@@ -84,10 +81,10 @@ function incrementDeadline(rowid) {
             </label>
             <input
               name="time"
-              // onChange={(e)=>setdate(e.target.value)}
+               onChange={(e)=>setdate(e.target.value)}
               style={{ width: "100%" }}
               type="datetime-local"
-              // value={date}
+               value={date}
             ></input>
 
             <Button
@@ -95,7 +92,7 @@ function incrementDeadline(rowid) {
               color="primary"
               size="small"
               style={{ marginTop: 16 }}
-            //  onclick={()=>updatedate()}
+              onClick={()=>updatedate()}
             >
               <AiOutlineFieldTime style={{ marginRight: 10 }} />
               Increase Due Date
@@ -120,7 +117,7 @@ export default function PendingDeadlineRequests() {
            arr.map((val, id) => {
                 console.log("idss",id)
                 if(val.pending==true){
-                row[id]={id: id, FacultyMemberName: val.Request_id.Name, Request: val.Round+" ( "+val.Type+" )", CurrentDeadline:val.Deadline}
+                row[id]={_id:val._id,id: id, FacultyMemberName: val.Request_id.Name, Request: val.Round+" ( "+val.Type+" )", CurrentDeadline:val.Deadline}
                 }
               })
           console.log("uajh",row)

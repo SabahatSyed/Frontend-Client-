@@ -11,7 +11,7 @@ import EvaluatedFolders from "../Evaluator/EvaluatedFolders";
 function EvaluatorRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<Evaluatornav />}>
+      <Route path="/" element={<Evaluatornav/>}>
         <Route path="/Dashboard" element={<FolderEvaluation />} />
         <Route path="/EvaluatedFolders" element={<EvaluatedFolders />} />
 
